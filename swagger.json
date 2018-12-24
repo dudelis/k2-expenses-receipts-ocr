@@ -1,0 +1,67 @@
+﻿{
+  "swagger": "2.0",
+  "info": {
+    "title": "K2 Expenses Receipts OCR",
+    "description": "Used to transfer file to ABBYY OCR and to convert xml response to json",
+    "version": "0.0.1"
+  },
+  "host": "localhost:3000",
+  "schemes": [ "http" ],
+  "tags": [
+    {
+      "name": "tag",
+      "description": "Entity of an account"
+    }
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/ocr/processReceipt?country={country}": {
+      "post": {
+        "description": "Process",
+        "operationId": "Process",
+        "consumes": ["application/x-www-form-urlencoded"],
+        "produces": [ "application/json" ],
+        "parameters": [
+          {
+            "name": "country",
+            "in": "path",
+            "description": "Country",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "formData", 
+            "name": "Image",
+            "required": true,
+            "type": "file"            
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "string" }
+          },
+          "default": {
+            "description": "Unexpected error (detail included)",
+            "schema": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ObjectDescription": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObjectField"
+          }
+        }
+      }
+    }
+  }
+}

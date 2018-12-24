@@ -4,24 +4,26 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var ocrRouter = require('./routes/ocr');
 
 var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+//Implementing Basic auth check - for K2 REST ServiceBroker
+app.use((req, res, next) => {
+  const authType = (req.headers.authorization || '').split(' ')[0];
+  //Verify auth is Basic
+  if (authType != 'Basic') {
+    res.set('WWW-Authenticate', 'Basic realm="401"') // change this
+    res.status(401).send('Authentication required.') // custom message
+    return
+  }
+  next();
+});
+
 app.use('/ocr', ocrRouter);
 
 // catch 404 and forward to error handler
