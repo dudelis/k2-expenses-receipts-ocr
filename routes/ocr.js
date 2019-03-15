@@ -1,45 +1,90 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const axios = require('axios');
+const parseString = require('xml2js').parseString;
 
-var abbyyocr = require('../ocr/abbyyocr');
+const abbyyocr = require('../api/abbyyocr');
+//var abbyyocr = require('../ocr/abbyyocr');
+router.get('/getApplicationInfo', async function (req, res) {
+    const authHeader = req.headers.authorization;
+    const response = await abbyyocr.get('/getApplicationInfo', {
+        headers: {
+            'Authorization': authHeader
+        }
+    });
+    res.send(response.data);
 
-
-//Check that authorization is Basic and provided.
-//Otherwise, we send the header for K2.
-router.use((req, res, next) =>{
-    const authType = (req.headers.authorization || '').split(' ')[0];
-    //Verify auth is Basic
-    if (authType != 'Basic') {
-        //Set specific Header for K2 Rest Broker
-        res.set('WWW-Authenticate', 'Basic realm="401"')
-        res.status(401).send('Authentication required.')
-        return
-    }
-    next();
 });
 
-
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-    if (!req.headers.authorization){
-        return res.status(401).send({ error: 'No credentials sent!' });
-    }
+router.post('/processReceipt', async function (req, res, next) {
     console.log(req.headers.authorization);
+    let data;
+    if (req.files) {
+        data = req.files[0].buffer;
+    }
+    axios.post('http://cloud.ocrsdk.com/processReceipt', data, {
+        auth: {
+            username: req.username,
+            password: req.password
+        },
+        headers: {
+            'User-Agent': "node.js client library"
+        },
+        proxy: {
+            hostname: 'localhost',
+            port: 9999
+        }
+    }).then(resp => {
+        parseString(resp.data, (err, result) => {
+            if (!err) {
+                return res.send(result);
+            } else {
+                res.status(500).send(err);
+            }
+
+        });
+
+    }).catch(e => {
+        return res.send({
+            stack: e.stack,
+            message: e.message
+        });
+    });
 });
-
-router.post('/processReceipt', function(req, res, next) {
+router.post('/processImage', async function (req, res, next) {
     console.log(req.headers.authorization);
-    if (!req.headers.authorization){
-        return res.status(401).send({ error: 'No credentials sent!' });
+    let data;
+    if (req.files) {
+        data = req.files[0].buffer;
     }
-    var auth = req.headers.authorization;
-    
-    var sdk = new abbyyocr.create(auth, req.query);
-    sdk.processReceipt(req.body, console.log('callback'));
-    
+    axios.post('http://cloud.ocrsdk.com/processImage', data, {
+        auth: {
+            username: req.username,
+            password: req.password
+        },
+        headers: {
+            'User-Agent': "node.js client library"
+        },
+        proxy: {
+            hostname: 'localhost',
+            port: 9999
+        }
+    }).then(resp => {
+        parseString(resp.data, (err, result) => {
+            if (!err) {
+                return res.send(result);
+            } else {
+                res.status(500).send(err);
+            }
 
-    
-    res.send({'auth': auth, 'type': req.query.type});
+        });
+
+    }).catch(e => {
+        return res.send({
+            stack: e.stack,
+            message: e.message
+        });
+    });
 });
 
 module.exports = router;

@@ -3,10 +3,13 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const multer = require('multer');
+const upload = multer();
 
 var ocrRouter = require('./routes/ocr');
 
 var app = express();
+app.use(upload.any());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -21,6 +24,11 @@ app.use((req, res, next) => {
     res.status(401).send('Authentication required.') // custom message
     return
   }
+  //Getting credentials and use them for MongoDB authentication.
+  const base64Credentials =  req.headers.authorization.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  req.username = credentials.split(':')[0];
+  req.password = credentials.split(':')[1];
   next();
 });
 

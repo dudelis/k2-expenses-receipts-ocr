@@ -5,7 +5,7 @@
     "description": "Used to transfer file to ABBYY OCR and to convert xml response to json",
     "version": "0.0.1"
   },
-  "host": "localhost:3000",
+  "host": "dlx.denallix.com:3000",
   "schemes": [ "http" ],
   "tags": [
     {
@@ -17,6 +17,56 @@
     "application/json"
   ],
   "paths": {
+    "/ocr/getApplicationInfo": {
+      "get": {
+        "description": "Process",
+        "operationId": "getApplicationInfo",
+        "produces": [ "application/json" ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "string" }
+          },
+          "default": {
+            "description": "Unexpected error (detail included)",
+            "schema": { "type": "string" }
+          }
+        }
+      }
+    },
+    "/ocr/processImage?country={country}": {
+      "post": {
+        "description": "Process Image",
+        "operationId": "processImage",
+        "consumes": ["application/x-www-form-urlencoded"],
+        "produces": [ "application/json" ],
+        "parameters": [
+          {
+            "name": "country",
+            "in": "path",
+            "description": "Country",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "formData", 
+            "name": "Image",
+            "required": true,
+            "type": "file"            
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "string" }
+          },
+          "default": {
+            "description": "Unexpected error (detail included)",
+            "schema": { "type": "string" }
+          }
+        }
+      }
+    },
     "/ocr/processReceipt?country={country}": {
       "post": {
         "description": "Process",
