@@ -4,7 +4,6 @@ const axios = require('axios');
 const parseString = require('xml2js').parseString;
 
 const abbyyocr = require('../api/abbyyocr');
-//var abbyyocr = require('../ocr/abbyyocr');
 router.get('/getApplicationInfo', async function (req, res) {
     const authHeader = req.headers.authorization;
     const response = await abbyyocr.get('/getApplicationInfo', {
@@ -15,12 +14,50 @@ router.get('/getApplicationInfo', async function (req, res) {
     res.send(response.data);
 
 });
+router.get('/getTaskStatus', async function (req, res) {
+    let axiosOptions = {
+        headers: {
+            'Authorization': req.headers.authorization,
+            'User-Agent': "node.js client library",
+        },
+        proxy: {
+            hostname: 'localhost',
+            port: 9999
+        }
+    };
+    if (req.query.taskId){
+        axiosOptions.params = {
+            taskId: req.query.taskId
+        };
+    }
+    abbyyocr.get('/getTaskStatus', axiosOptions)
+    .then(resp => {
+        parseString(resp.data, (err, result) => {
+            if (!err) {
+                return res.send(result);
+            } else {
+                res.status(500).send(err);
+            }
+        });
+    })
+    .catch(e => {
+        return res.send({
+            stack: e.stack,
+            message: e.message
+        });
+    });
+
+});
 
 router.post('/processReceipt', async function (req, res, next) {
     console.log(req.headers.authorization);
     let data;
+    let pCountry = 'usa';
     if (req.files) {
         data = req.files[0].buffer;
+    }
+    if  (req.query.country){
+        pCountry = req.query.country;
     }
     axios.post('http://cloud.ocrsdk.com/processReceipt', data, {
         auth: {
@@ -28,7 +65,11 @@ router.post('/processReceipt', async function (req, res, next) {
             password: req.password
         },
         headers: {
-            'User-Agent': "node.js client library"
+            'User-Agent': "node.js client library",
+            'Content-Type': 'text/plain'
+        },
+        params:{
+            country: pCountry
         },
         proxy: {
             hostname: 'localhost',
@@ -41,9 +82,7 @@ router.post('/processReceipt', async function (req, res, next) {
             } else {
                 res.status(500).send(err);
             }
-
         });
-
     }).catch(e => {
         return res.send({
             stack: e.stack,
@@ -63,7 +102,8 @@ router.post('/processImage', async function (req, res, next) {
             password: req.password
         },
         headers: {
-            'User-Agent': "node.js client library"
+            'User-Agent': "node.js client library",
+            'Content-Type': 'text/plain'
         },
         proxy: {
             hostname: 'localhost',
@@ -76,9 +116,7 @@ router.post('/processImage', async function (req, res, next) {
             } else {
                 res.status(500).send(err);
             }
-
         });
-
     }).catch(e => {
         return res.send({
             stack: e.stack,

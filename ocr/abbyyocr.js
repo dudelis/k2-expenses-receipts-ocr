@@ -1,15 +1,14 @@
-'use strict'
-const request = require('request')
+const request = require('request');
 const url = require('url');
-const xml2js = require('xml2js')
-const async = require('async')
+const xml2js = require('xml2js');
+const async = require('async');
 
 class SDK {
 
   constructor(authHeader, urlParams) {
-    this.authHeader = authHeader
-    this.serverUrl = "http://cloud.ocrsdk.com"
-    this.urlParams = urlParams
+    this.authHeader = authHeader;
+    this.serverUrl = "http://cloud.ocrsdk.com";
+    this.urlParams = urlParams;
   }
 
   processReceipt(imageBody, callback) {

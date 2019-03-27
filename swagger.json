@@ -34,7 +34,7 @@
         }
       }
     },
-    "/ocr/processImage?country={country}": {
+    "/ocr/processImage": {
       "post": {
         "description": "Process Image",
         "operationId": "processImage",
@@ -43,7 +43,7 @@
         "parameters": [
           {
             "name": "country",
-            "in": "path",
+            "in": "query",
             "description": "Country",
             "required": false,
             "type": "string"
