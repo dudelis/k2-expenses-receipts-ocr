@@ -5,5 +5,6 @@
       "MY_GLOBAL": true
     },
     "esversion":8,
-    "node": true
+    "node": true,
+    "strict": true
   }

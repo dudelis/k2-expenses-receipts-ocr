@@ -1,7 +1,10 @@
+"use strict";
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const parseString = require('xml2js').parseString;
+
+const ocr = require('../ocr/ocr');
 
 const abbyyocr = require('../api/abbyyocr');
 router.get('/getApplicationInfo', async function (req, res) {
@@ -34,6 +37,10 @@ router.get('/getTaskStatus', async function (req, res) {
     .then(resp => {
         parseString(resp.data, (err, result) => {
             if (!err) {
+
+
+
+
                 return res.send(result);
             } else {
                 res.status(500).send(err);
@@ -90,7 +97,7 @@ router.post('/processReceipt', async function (req, res, next) {
         });
     });
 });
-router.post('/processImage', async function (req, res, next) {
+router.post('/processImage', async function (req, res) {
     console.log(req.headers.authorization);
     let data;
     if (req.files) {
@@ -123,6 +130,16 @@ router.post('/processImage', async function (req, res, next) {
             message: e.message
         });
     });
+});
+
+router.post('/processReceipt1', async function (req, res) {
+    let data;
+    if (req.files) {
+        data = req.files[0].buffer;
+    }
+    const ocrInstance = ocr.create(req.username, req.password, data, req.query);
+    
+    ocrInstance.processReceipt((err)=>{res.send(err)})
 });
 
 module.exports = router;

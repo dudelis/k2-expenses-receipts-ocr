@@ -99,6 +99,39 @@
           }
         }
       }
+    },
+    "/ocr/processReceipt1?country={country}": {
+      "post": {
+        "description": "Process1",
+        "operationId": "Process1",
+        "consumes": ["application/x-www-form-urlencoded"],
+        "produces": [ "application/json" ],
+        "parameters": [
+          {
+            "name": "country",
+            "in": "path",
+            "description": "Country",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "formData", 
+            "name": "Image",
+            "required": true,
+            "type": "file"            
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "string" }
+          },
+          "default": {
+            "description": "Unexpected error (detail included)",
+            "schema": { "type": "string" }
+          }
+        }
+      }
     }
   },
   "definitions": {

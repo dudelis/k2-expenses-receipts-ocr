@@ -59,7 +59,7 @@ function parseXmlResponse(data, taskDataCallback) {
   });
   parser.parseString(data, function(err, objResult) {
     if (err) {
-      taskDataCallback(err, null)
+       taskDataCallback(err, null)
       return
     }
     response = objResult
