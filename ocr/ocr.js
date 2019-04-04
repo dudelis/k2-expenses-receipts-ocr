@@ -13,7 +13,6 @@ class OCR {
         this.urlParams = urlParams;
         this.imageData = imageData;
     }
-
     processReceipt(callback) {
         async.auto({
             startTask: done => {
@@ -61,7 +60,7 @@ class OCR {
             axiosInstance().then(resp => {
                 const taskData = this._parseXmlResponse(resp.data, callback);
                 if (this._isTaskActive(taskData)) {
-                    this._delay(waitFunction, waitTimeout);
+                    return this._delay(waitFunction, waitTimeout);
                 } else {
                     callback(null, taskData);
                 }
@@ -89,7 +88,6 @@ class OCR {
             callback(e);
         }
     }
-
     _createAxiosInstance(method, urlPath, imageData) {
         const axiosInstance = axios.create({
             baseURL: this.serverUrl,
@@ -99,10 +97,10 @@ class OCR {
                 username: this.authLogin,
                 password: this.authPassword
             },
-            proxy: {
-                hostname: 'localhost',
-                port: 9999
-            }
+            // proxy: {
+            //     hostname: 'localhost',
+            //     port: 9999
+            // }
         });
         axiosInstance.defaults.headers.post['Content-Type'] = 'text/plain';
         axiosInstance.defaults.headers.post['User-Agent'] = 'node.js client library';

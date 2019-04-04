@@ -67,7 +67,7 @@
         }
       }
     },
-    "/ocr/processReceipt1?country={country}": {
+    "/ocr/processReceipt/": {
       "post": {
         "description": "ProcessReceipt",
         "operationId": "ProcessReceipt",
@@ -76,8 +76,8 @@
         "parameters": [
           {
             "name": "country",
-            "in": "path",
-            "description": "Country",
+            "in":"query",
+            "description": "country",
             "required": false,
             "type": "string"
           },
@@ -91,7 +91,10 @@
         "responses": {
           "200": {
             "description": "OK",
-            "schema": { "$ref": "#/definitions/ProcessedReceipt" }
+            "schema": { 
+              "type":"object",
+              "$ref": "#/definitions/ProcessedReceipt"
+            }
           },
           "default": {
             "description": "Unexpected error (detail included)",
