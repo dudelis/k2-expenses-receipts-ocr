@@ -67,43 +67,10 @@
         }
       }
     },
-    "/ocr/processReceipt?country={country}": {
-      "post": {
-        "description": "Process",
-        "operationId": "Process",
-        "consumes": ["application/x-www-form-urlencoded"],
-        "produces": [ "application/json" ],
-        "parameters": [
-          {
-            "name": "country",
-            "in": "path",
-            "description": "Country",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "in": "formData", 
-            "name": "Image",
-            "required": true,
-            "type": "file"            
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": { "type": "string" }
-          },
-          "default": {
-            "description": "Unexpected error (detail included)",
-            "schema": { "type": "string" }
-          }
-        }
-      }
-    },
     "/ocr/processReceipt1?country={country}": {
       "post": {
-        "description": "Process1",
-        "operationId": "Process1",
+        "description": "ProcessReceipt",
+        "operationId": "ProcessReceipt",
         "consumes": ["application/x-www-form-urlencoded"],
         "produces": [ "application/json" ],
         "parameters": [
@@ -124,7 +91,7 @@
         "responses": {
           "200": {
             "description": "OK",
-            "schema": { "type": "string" }
+            "schema": { "$ref": "#/definitions/ProcessedReceipt" }
           },
           "default": {
             "description": "Unexpected error (detail included)",
@@ -135,15 +102,16 @@
     }
   },
   "definitions": {
-    "ObjectDescription": {
+    "ProcessedReceipt":{
       "type": "object",
-      "properties": {
-        "fields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ObjectField"
-          }
-        }
+      "properties":{
+        "taskId": {"type":"string"},
+        "currency": {"type":"string"},
+        "vendor": {"type":"string"},
+        "vendorAddress": {"type":"string"},
+        "date": {"type":"string"},
+        "total": {"type":"string"},
+        "tax": {"type":"string"}
       }
     }
   }
