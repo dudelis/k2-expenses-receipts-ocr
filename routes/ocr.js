@@ -28,42 +28,42 @@ router.get('/getTaskStatus', async function (req, res) {
             port: 9999
         }
     };
-    if (req.query.taskId){
+    if (req.query.taskId) {
         axiosOptions.params = {
             taskId: req.query.taskId
         };
     }
     abbyyocr.get('/getTaskStatus', axiosOptions)
-    .then(resp => {
-        parseString(resp.data, (err, result) => {
-            if (!err) {
+        .then(resp => {
+            parseString(resp.data, (err, result) => {
+                if (!err) {
 
 
 
 
-                return res.send(result);
-            } else {
-                res.status(500).send(err);
-            }
+                    return res.send(result);
+                } else {
+                    res.status(500).send(err);
+                }
+            });
+        })
+        .catch(e => {
+            return res.send({
+                stack: e.stack,
+                message: e.message
+            });
         });
-    })
-    .catch(e => {
-        return res.send({
-            stack: e.stack,
-            message: e.message
-        });
-    });
 
 });
 
-router.post('/processReceipt', async function (req, res, next) {
+router.post('/processReceipt', async function (req, res) {
     console.log(req.headers.authorization);
     let data;
     let pCountry = 'usa';
     if (req.files) {
         data = req.files[0].buffer;
     }
-    if  (req.query.country){
+    if (req.query.country) {
         pCountry = req.query.country;
     }
     axios.post('http://cloud.ocrsdk.com/processReceipt', data, {
@@ -75,7 +75,7 @@ router.post('/processReceipt', async function (req, res, next) {
             'User-Agent': "node.js client library",
             'Content-Type': 'text/plain'
         },
-        params:{
+        params: {
             country: pCountry
         },
         proxy: {
@@ -132,14 +132,18 @@ router.post('/processImage', async function (req, res) {
     });
 });
 
-router.post('/processReceipt1', async function (req, res) {
+router.post('/processReceipt1', async function (req, res, next) {
     let data;
     if (req.files) {
         data = req.files[0].buffer;
     }
     const ocrInstance = ocr.create(req.username, req.password, data, req.query);
-    
-    ocrInstance.processReceipt((err)=>{res.send(err)})
+    ocrInstance.processReceipt((err, result) => {
+        if(err){
+            next(err);
+        }
+        return res.status(200).send(result);
+    });
 });
 
 module.exports = router;
