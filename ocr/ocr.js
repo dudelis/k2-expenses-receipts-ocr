@@ -14,7 +14,7 @@ class OCR {
         this.imageData = imageData;
     }
 
-    processReceipt(callbackmain) {
+    processReceipt(callback) {
         async.auto({
             startTask: done => {
                 this._startTask(done);
@@ -25,7 +25,18 @@ class OCR {
             getTaskResult: ['getTaskStatus', (task, done) => {
                 this._getTaskResult(task.getTaskStatus.resultUrl[0], done);
             }]
-        }, (err, result) => callbackmain(err, result.getTaskResult));
+        }, (err, result) => {
+            const response = {
+                taskId: result.startTask.id[0],
+                currency: result.getTaskResult.receipts.receipt[0].$.currency,
+                vendor: result.getTaskResult.receipts.receipt[0].vendor[0].name[0].recognizedValue[0].text[0],
+                vendorAddress: result.getTaskResult.receipts.receipt[0].vendor[0].fullAddress[0].text[0],
+                date: result.getTaskResult.receipts.receipt[0].date[0].normalizedValue[0],
+                total: result.getTaskResult.receipts.receipt[0].total[0].normalizedValue[0],
+                tax: result.getTaskResult.receipts.receipt[0].tax[0].normalizedValue[0]
+            };
+            callback(err, response);
+        });
     }
     async _startTask(callback) {
         var urlOptions = Object.keys(this.urlParams).map((key) => `${key}=${this.urlParams[key]}`).join('&');
@@ -48,9 +59,12 @@ class OCR {
         const waitFunction = () => {
             const axiosInstance = this._createAxiosInstance('GET', '/getTaskStatus?taskId=' + taskId);
             axiosInstance().then(resp => {
-                console.log(resp.data);
-                const taskStatus = this._parseXmlResponse(resp.data, callback);
-                callback(null, taskStatus);
+                const taskData = this._parseXmlResponse(resp.data, callback);
+                if (this._isTaskActive(taskData)) {
+                    this._delay(waitFunction, waitTimeout);
+                } else {
+                    callback(null, taskData);
+                }
             }).catch(err => {
                 callback(err);
             })
@@ -61,22 +75,19 @@ class OCR {
     _isTaskActive(taskData) {
         return taskData.status === 'Queued' || taskData.status === 'InProgress'
     }
-
-    _getTaskResult(resultUrl, callback) {
-        const parsedUrl = url.parse(resultUrl);
-        //const axiosInstance = this._createAxiosInstance('GET', parsedUrl.href);
-        axios.get(parsedUrl.href)
-            .then(resp => {
-                xml2js.parseString(resp.data, (err, result) => {
-                    if (err) {
-                        callback(err);
-                    }
-                    callback(null, result);
-                });
-            })
-            .catch(err => {
-                callback(err);
+    async _getTaskResult(resultUrl, callback) {
+        try {
+            const parsedUrl = url.parse(resultUrl);
+            const response = await axios.get(parsedUrl.href);
+            xml2js.parseString(response.data, (err, result) => {
+                if (err) {
+                    callback(err);
+                }
+                callback(null, result);
             });
+        } catch (e) {
+            callback(e);
+        }
     }
 
     _createAxiosInstance(method, urlPath, imageData) {
@@ -131,8 +142,12 @@ class OCR {
         var task = response.response.task[0]
         return task;
     }
+    _delay(v, t) {
+        return new Promise(function (resolve) {
+            setTimeout(resolve.bind(null, v), t);
+        });
+    }
 }
-
 
 exports.create = function (authLogin, authPassword, imageData, urlParams) {
     return new OCR(authLogin, authPassword, imageData, urlParams);
