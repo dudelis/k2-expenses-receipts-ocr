@@ -5,7 +5,7 @@
     "description": "Used to transfer file to ABBYY OCR and to convert xml response to json",
     "version": "0.0.1"
   },
-  "host": "dlx.denallix.com:3000",
+  "host": "k2-expenses-receipts-ocr.herokuapp.com",
   "schemes": [ "http" ],
   "tags": [
     {
