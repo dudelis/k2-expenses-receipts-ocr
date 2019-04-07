@@ -2,13 +2,13 @@
 const express = require('express');
 const router = express.Router();
 const parseString = require('xml2js').parseString;
+const axios = require('axios');
 
 const ocr = require('../ocr/ocr');
 
-const abbyyocr = require('../api/abbyyocr');
 router.get('/getApplicationInfo', async function (req, res) {
     const authHeader = req.headers.authorization;
-    const response = await abbyyocr.get('/getApplicationInfo', {
+    const response = await axios.get('http://cloud.ocrsdk.com/getApplicationInfo', {
         headers: {
             'Authorization': authHeader
         }
@@ -32,7 +32,7 @@ router.get('/getTaskStatus', async function (req, res) {
             taskId: req.query.taskId
         };
     }
-    abbyyocr.get('/getTaskStatus', axiosOptions)
+    axios.get('http://cloud.ocrsdk.com/getTaskStatus', axiosOptions)
         .then(resp => {
             parseString(resp.data, (err, result) => {
                 if (!err) {

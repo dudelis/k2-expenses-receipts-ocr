@@ -38,14 +38,15 @@ class OCR {
         });
     }
     async _startTask(callback) {
-        var urlOptions = Object.keys(this.urlParams).map((key) => `${key}=${this.urlParams[key]}`).join('&');
-        const axiosInstance = this._createAxiosInstance('POST', '/processReceipt?' + urlOptions, this.imageData);
-        axiosInstance().then(resp => {
+        try {
+            var urlOptions = Object.keys(this.urlParams).map((key) => `${key}=${this.urlParams[key]}`).join('&');
+            const axiosInstance = this._createAxiosInstance('POST', '/processReceipt?' + urlOptions, this.imageData);
+            const resp = await axiosInstance();
             const task = this._parseXmlResponse(resp.data, callback);
             callback(null, task);
-        }).catch(err => {
+        } catch (err) {
             callback(err);
-        });
+        }
     }
 
     _getTaskStatus(taskId, callback) {
@@ -55,18 +56,20 @@ class OCR {
             return
         }
         const waitTimeout = 2000;
-        const waitFunction = () => {
-            const axiosInstance = this._createAxiosInstance('GET', '/getTaskStatus?taskId=' + taskId);
-            axiosInstance().then(resp => {
+        const waitFunction = async () => {
+            try {
+                const axiosInstance = this._createAxiosInstance('GET', '/getTaskStatus?taskId=' + taskId);
+                const resp = await axiosInstance();
                 const taskData = this._parseXmlResponse(resp.data, callback);
                 if (this._isTaskActive(taskData)) {
-                    return this._delay(waitFunction, waitTimeout);
+                    setTimeout(waitFunction, waitTimeout);
+                    //return this._delay(waitFunction, waitTimeout);
                 } else {
                     callback(null, taskData);
                 }
-            }).catch(err => {
+            } catch (err) {
                 callback(err);
-            })
+            }
         };
         setTimeout(waitFunction, waitTimeout)
     }
